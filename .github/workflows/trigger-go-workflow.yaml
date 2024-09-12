@@ -36,6 +36,7 @@ jobs:
       matrix:
         repo:
           [
+            shaynafinocchiaro/test-csm-operator,
             "$WF_ORG/csi-metadata-retriever",
             "$WF_ORG/csi-volumegroup-snapshotter",
             "$WF_ORG/goscaleio",
