@@ -10,6 +10,8 @@
 name: Trigger Go Version Workflow
 
 on:
+  # Invocable as a reusable workflow
+  workflow_call:
   # Can be manually triggered
   workflow_dispatch:
     inputs:
