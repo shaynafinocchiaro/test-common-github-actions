@@ -80,5 +80,5 @@ jobs:
         with:
           token: ${{ secrets.SF_GO_PAT }}
           repository: ${{ matrix.repo }}
-          event-type: trigger-go-workflow
+          event-type: go-update-workflow
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
