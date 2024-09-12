@@ -6,34 +6,19 @@
 #
 #  http://www.apache.org/licenses/LICENSE-2.0
 
-# Trigger workflow for go version update on CSM projects
-name: Trigger Go Version Workflow
+# Reusable workflow to perform go version update on Golang based projects
+name: Go Version
 
 on:
-  # Invocable as a reusable workflow
-  workflow_call:
-  # Can be manually triggered
-  workflow_dispatch:
-    inputs:
-      internal-repositories:
-        description: "Internal repositories to trigger workflow against"
-        required: false
-
-# permissions required for this workflow
-permissions:
-  pull-requests: write
-  contents: write
-
-# environment variables
-env:
-  WF_ORG: dell
-  INTERNAL_REPOS: ${{ github.event.inputs.internal-repositories }}
+  workflow_call: 
+  repository_dispatch:
+    types: [trigger-go-workflow]
 
 jobs:
-  go-version:
-    name: Update go version
-    runs-on: ubuntu-latest
-    steps:
+    go-version:
+      name: Update go version
+      runs-on: ubuntu-latest
+      steps:
       - name: Check latest go version
         run: |
           echo "GO_VERSION_STRIPPED=$(curl -sL https://go.dev/VERSION?m=text | awk 'NR==1{print $1}' | tr -cd '[:digit:].')" >> $GITHUB_ENV
@@ -69,58 +54,3 @@ jobs:
           title: "Update go version to ${{ env.GO_VERSION_STRIPPED }}"
           body: "PR opened by CSM release to update go version to ${{ env.GO_VERSION_STRIPPED }}"
           delete-branch: true
-
-  trigger:
-    name: Trigger Go Version Update
-    runs-on: ubuntu-latest
-    needs: go-version
-
-    strategy:
-      matrix:
-        repo:
-          [
-            "$WF_ORG/csi-metadata-retriever",
-            "$WF_ORG/csi-volumegroup-snapshotter",
-            "$WF_ORG/goscaleio",
-            "$WF_ORG/gopowermax",
-            "$WF_ORG/gounity",
-            "$WF_ORG/gopowerscale",
-            "$WF_ORG/gopowerstore",
-            "$WF_ORG/gobrick",
-            "$WF_ORG/gocsi",
-            "$WF_ORG/goiscsi",
-            "$WF_ORG/gonvme",
-            "$WF_ORG/goobjectscale",
-            "$WF_ORG/gofsutil",
-            "$WF_ORG/dell-csi-extensions",
-            "$WF_ORG/connectivity-cert-persister-k8s",
-            "$WF_ORG/csi-powerflex",
-            "$WF_ORG/csi-unity",
-            "$WF_ORG/csi-powerscale",
-            "$WF_ORG/csi-powerstore",
-            "$WF_ORG/csi-powermax",
-            "$WF_ORG/cosi",
-            "$WF_ORG/csm-authorization",
-            "$WF_ORG/csm-observability",
-            "$WF_ORG/csm-metrics-powerscale",
-            "$WF_ORG/csm-metrics-powermax",
-            "$WF_ORG/csm-metrics-powerstore",
-            "$WF_ORG/karavi-metrics-powerflex",
-            "$WF_ORG/csm-metrics-unity",
-            "$WF_ORG/csm-replication",
-            "$WF_ORG/karavi-resiliency",
-            "$WF_ORG/csm-operator",
-            "$WF_ORG/cert-csi",
-            "$WF_ORG/csm",
-            "$WF_ORG/csm-docs",
-            "$INTERNAL_REPOS",
-          ]
-
-    steps:
-      - name: Trigger Go Version Update
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.SF_GO_PAT }}
-          repository: ${{ matrix.repo }}
-          event-type: trigger-go-workflow
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
