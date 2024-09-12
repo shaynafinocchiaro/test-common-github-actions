@@ -12,6 +12,11 @@ name: Go Version
 on:
   workflow_call:
 
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
 jobs:
     go-version:
       name: Update go version
@@ -36,7 +41,7 @@ jobs:
         run: |
           echo "Updating go version to ${{ env.GO_VERSION_STRIPPED }}"
 
-          for f in $(find . -name "go.mod" -exec go mod edit -go=${{ env.GO_VERSION_STRIPPED }} && go mod edit -toolchain=${{ env.GO_VERSION }} {} \;); do $f; done
+          for f in $(find . -name "go.mod" -exec sh -c "go mod edit -go=${{ env.GO_VERSION_STRIPPED }} && go mod edit -toolchain=${{ env.GO_VERSION }}" {} \;); do $f; done
           go mod tidy
           find . -name "config/csm-common.mk" -exec sed -i "s/DEFAULT_GOVERSION.*/DEFAULT_GOVERSION=\"${{ env.GO_VERSION_STRIPPED }}\"/g" {} \;
           git grep -l "go-version" | xargs sed -i "s/go-version:.*/go-version: ${{ env.GO_VERSION_STRIPPED }}/"
@@ -50,4 +55,6 @@ jobs:
           commit-message: "Update go version to ${{ env.GO_VERSION_STRIPPED }}"
           title: "Update go version to ${{ env.GO_VERSION_STRIPPED }}"
           body: "PR opened by CSM release to update go version to ${{ env.GO_VERSION_STRIPPED }}"
+          sign-commits: true
           delete-branch: true
+          push-to-fork: shaynafinocchiaro/test-csm-operator
