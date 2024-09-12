@@ -10,9 +10,7 @@
 name: Go Version
 
 on:
-  workflow_call: 
-  repository_dispatch:
-    types: [trigger-go-workflow]
+  workflow_call:
 
 jobs:
     go-version:
