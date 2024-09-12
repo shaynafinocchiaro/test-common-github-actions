@@ -17,11 +17,6 @@ on:
         description: 'Internal repositories to trigger workflow against'
         required: false
 
-# permissions required for this workflow
-permissions:
-  pull-requests: write
-  contents: write
-
 # environment variables
 env:
   WF_ORG: dell
@@ -76,7 +71,7 @@ jobs:
 
     steps:
       - name: Trigger Go Version Update
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.SF_GO_PAT }}
           repository: ${{ matrix.repo }}
