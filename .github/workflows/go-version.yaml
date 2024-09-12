@@ -123,3 +123,4 @@ jobs:
           token: ${{ secrets.SF_GO_PAT }}
           repository: ${{ matrix.repo }}
           event-type: trigger-go-workflow
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
