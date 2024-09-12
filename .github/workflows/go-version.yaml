@@ -31,8 +31,6 @@ jobs:
       # Uses trigger-workflow.yaml payload
       - name: Checkout the code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.client_payload.sha }}
 
       - name: Update go version
         run: |
