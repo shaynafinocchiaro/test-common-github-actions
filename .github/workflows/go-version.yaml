@@ -56,4 +56,3 @@ jobs:
           body: "PR opened by CSM release to update go version to ${{ env.GO_VERSION_STRIPPED }}"
           sign-commits: true
           delete-branch: true
-          push-to-fork: shaynafinocchiaro/test-csm-operator

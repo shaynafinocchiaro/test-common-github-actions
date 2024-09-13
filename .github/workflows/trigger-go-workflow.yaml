@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       internal-repositories:
-        description: 'Internal repositories to trigger workflow against'
+        description: 'Internal repositories to trigger workflow against. Matrix example: "org/repo1, org/repo2"'
         required: false
 
 # environment variables
