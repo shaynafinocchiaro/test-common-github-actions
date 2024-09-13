@@ -50,7 +50,7 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.CSM_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: "go-${{ env.GO_VERSION_STRIPPED }}"
           commit-message: "Update go version to ${{ env.GO_VERSION_STRIPPED }}"
           title: "Update go version to ${{ env.GO_VERSION_STRIPPED }}"
