@@ -12,10 +12,11 @@ name: Go Version Update
 on:
   workflow_call:
 
-permissions:
-  contents: write
-  pull-requests: write
-  actions: write
+# permissions required for this workflow
+permissions: write-all
+#   contents: write
+#   pull-requests: write
+#   actions: write
 
 jobs:
     go-version:
@@ -37,6 +38,11 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4
 
+      # This step will update the go version in:
+      # 1 - go.mod files
+      # 2 - csm-common.mk for UBI image
+      # 3 - github actions
+      # 4 - Dockerfiles
       - name: Update go version
         run: |
           echo "Updating go version to ${{ env.GO_VERSION_STRIPPED }}"
@@ -52,6 +58,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # token: ${{ secrets.SF_GO_PAT }}
           branch: "go-${{ env.GO_VERSION_STRIPPED }}"
           commit-message: "Update go version to ${{ env.GO_VERSION_STRIPPED }}"
           title: "Update go version to ${{ env.GO_VERSION_STRIPPED }}"
