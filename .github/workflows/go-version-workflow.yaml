@@ -45,11 +45,11 @@ jobs:
 
           if [ -n "$(git grep -l "toolchain")" ]; then sh -c "go mod edit -toolchain=${{ env.GO_VERSION }} && go mod tidy"; fi
 
-          find . -name "config/csm-common.mk" -exec sed -i "s/DEFAULT_GOVERSION.*/DEFAULT_GOVERSION=\"${{ env.GO_VERSION_STRIPPED }}\"/g" {} \;
+          if [ -f config/csm-common.mk ]; then sed -i "s/DEFAULT_GOVERSION.*/DEFAULT_GOVERSION=\"${{ env.GO_VERSION_STRIPPED }}\"/g" config/csm-common.mk; fi
 
-          if [ -n "$(git grep -l "go-version")" ]; then xargs sed -i "s/go-version:.*/go-version: "${{ env.GO_VERSION_STRIPPED }}"/"; fi
+          if [ -n "$(git grep -l "go-version")" ]; then sed -i "s/go-version:.*/go-version: "${{ env.GO_VERSION_STRIPPED }}"/"; fi
 
-          if [ -n "$(git grep -l "FROM golang")" ]; then xargs sed -i "s/golang:.*/golang:${{ env.GO_VERSION_STRIPPED }}/"; fi
+          if [ -n "$(git grep -l "FROM golang")" ]; then sed -i "s/golang:.*/golang:${{ env.GO_VERSION_STRIPPED }}/"; fi
 
       # Needed for signing commits using Github App tokens
       - uses: actions/create-github-app-token@v1.11.0
