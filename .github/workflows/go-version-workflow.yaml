@@ -38,18 +38,22 @@ jobs:
       # 3 - github actions
       # 4 - Dockerfiles
       - name: Update go version
+        env:
+          grep_cmd1: git grep -l "toolchain"
+          grep_cmd2: git grep -l "go-version"
+          grep_cmd3: git grep -l "FROM golang"
         run: |
           echo "Updating go version to ${{ env.GO_VERSION_STRIPPED }}"
 
-          for f in $(cd -- "$(dirname "$(find . -name go.mod | head -1 | sh -c "go mod edit -go=${{ env.GO_VERSION_STRIPPED }} && go mod tidy" {} \;)")"); do $f; done
+          if [ -f go.mod ]; then for f in $(cd -- "$(dirname "$(find . -name go.mod | head -1 | sh -c "go mod edit -go=${{ env.GO_VERSION_STRIPPED }} && go mod tidy" {} \;)")"); do $f; done; fi
 
-          if [ -n "$(git grep -l "toolchain")" ]; then sh -c "go mod edit -toolchain=${{ env.GO_VERSION }} && go mod tidy"; fi
+          if [ -n "$(${{ env.grep_cmd1 }})" ]; then sh -c "go mod edit -toolchain=${{ env.GO_VERSION }} && go mod tidy"; fi
 
           if [ -f config/csm-common.mk ]; then sed -i "s/DEFAULT_GOVERSION.*/DEFAULT_GOVERSION=\"${{ env.GO_VERSION_STRIPPED }}\"/g" config/csm-common.mk; fi
 
-          if [ -n "$(git grep -l "go-version")" ]; then sed -i "s/go-version:.*/go-version: "${{ env.GO_VERSION_STRIPPED }}"/"; fi
+          if [ -n "$(${{ env.grep_cmd2 }})" ]; then ${{ env.grep_cmd2 }} | xargs sed -i "s/go-version:.*/go-version: "${{ env.GO_VERSION_STRIPPED }}"/"; fi
 
-          if [ -n "$(git grep -l "FROM golang")" ]; then sed -i "s/golang:.*/golang:${{ env.GO_VERSION_STRIPPED }}/"; fi
+          if [ -n "$(${{ env.grep_cmd3 }})" ]; then ${{ env.grep_cmd3 }} | xargs sed -i "s/golang:.*/golang:${{ env.GO_VERSION_STRIPPED }}/"; fi
 
       # Needed for signing commits using Github App tokens
       - uses: actions/create-github-app-token@v1.11.0
