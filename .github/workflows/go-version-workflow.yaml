@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "Updating go version to ${{ env.GO_VERSION_STRIPPED }}"
 
-          if [ -f go.mod ]; then for f in $(cd -- "$(dirname "$(find . -name go.mod | head -1 | sh -c "go mod edit -go=${{ env.GO_VERSION_STRIPPED }} && go mod tidy" {} \;)")"); do $f; done; fi
+          if [ -f go.mod ]; then $(cd -- "$(dirname "$(find . -name go.mod | head -1 | sh -c "go mod edit -go=${{ env.GO_VERSION_STRIPPED }} && go mod tidy")")"); fi
 
           if [ -n "$(${{ env.grep_cmd1 }})" ]; then sh -c "go mod edit -toolchain=${{ env.GO_VERSION }} && go mod tidy"; fi
 
