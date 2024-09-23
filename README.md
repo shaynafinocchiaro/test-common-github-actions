@@ -88,6 +88,7 @@ on:
   repository_dispatch:
     types: [go-update-workflow]
 
+# permissions required for this workflow
 permissions:
   contents: write
   pull-requests: write
