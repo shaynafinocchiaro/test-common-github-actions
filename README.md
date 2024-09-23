@@ -76,6 +76,30 @@ jobs:
     name: Golang Validation
 ```
 
+### go-version-workflow
+
+This workflow updates to the latest go version in repositories that utilize Golang as the primary development language.
+
+The workflow does not accept any parameters and can be used from any repo by creating a workflow that resembles the following
+
+```yaml
+name: Workflow
+on:
+  repository_dispatch:
+    types: [go-update-workflow]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # go version update
+  go-version-update:
+    uses: dell/common-github-actions/.github/workflows/go-version-workflow.yaml@main
+    name: Go Version Update
+    secrets: inherit
+```
+
 ## Support
 
 Don’t hesitate to ask! Contact the team and community on [our support](./docs/SUPPORT.md).

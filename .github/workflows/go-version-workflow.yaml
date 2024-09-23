@@ -39,13 +39,14 @@ jobs:
       # 4 - Dockerfiles
       - name: Update go version
         env:
+          find_cmd: find . -name go.mod
           grep_cmd1: git grep -l "toolchain"
           grep_cmd2: git grep -l "go-version"
           grep_cmd3: git grep -l "FROM golang"
         run: |
           echo "Updating go version to ${{ env.GO_VERSION_STRIPPED }}"
 
-          if [ -f go.mod ]; then $(cd -- "$(dirname "$(find . -name go.mod | head -1 | sh -c "go mod edit -go=${{ env.GO_VERSION_STRIPPED }} && go mod tidy")")"); fi
+          if [ -n "$(${{ env.find_cmd }})" ]; then $(cd -- "$(dirname "$(${{ env.find_cmd }} | head -1 | sh -c "go mod edit -go=${{ env.GO_VERSION_STRIPPED }} && go mod tidy")")"); fi
 
           if [ -n "$(${{ env.grep_cmd1 }})" ]; then sh -c "go mod edit -toolchain=${{ env.GO_VERSION }} && go mod tidy"; fi
 
@@ -62,7 +63,7 @@ jobs:
           app-id: ${{ vars.RELEASE_ACTIONS_APP_ID }}
           private-key: ${{ secrets.RELEASE_ACTIONS_APP_PRIVATE_KEY }}
 
-      # Must allow GitHub Actions to create pull requests
+      # Must enable "allow GitHub Actions to create pull requests" setting
       # Author defaults to the user who triggered the workflow run
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
