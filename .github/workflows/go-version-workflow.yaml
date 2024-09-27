@@ -41,9 +41,9 @@ jobs:
         env:
           find_gomod: find . -name go.mod
           grep_cmd1: git grep -l "toolchain"
-          grep_cmd2: git grep -l "go-version"
+          grep_cmd2: grep -l "go-version"
           grep_cmd3: git grep -l "FROM golang"
-          exclude_file: .github/workflows/go-version-workflow.yaml
+          exclude_file: go-version-workflow.yaml
         run: |
           echo "Updating go version to ${{ env.GO_VERSION_STRIPPED }}"
 
@@ -53,7 +53,7 @@ jobs:
 
           if [ -f config/csm-common.mk ]; then sed -i "s/DEFAULT_GOVERSION.*/DEFAULT_GOVERSION=\"${{ env.GO_VERSION_STRIPPED }}\"/g" config/csm-common.mk; fi
 
-          find . -type f ! -name "${{ env.exclude_file }}" -exec grep -l "${{ env.grep_cmd2 }}" {} \; | while read -r file; do sed -i "s/go-version:.*/go-version: \"${{ env.GO_VERSION_STRIPPED }}\"/" "$file"
+          find . -type f ! -name "${{ env.exclude_file }}" -exec "${{ env.grep_cmd2 }}" {} \; | while read -r file; do sed -i "s/go-version:.*/go-version: \"${{ env.GO_VERSION_STRIPPED }}\"/" "$file"; done
 
           if [ -n "$(${{ env.grep_cmd3 }})" ]; then ${{ env.grep_cmd3 }} | xargs sed -i "s/golang:.*/golang:${{ env.GO_VERSION_STRIPPED }}/"; fi
 
