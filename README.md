@@ -78,20 +78,19 @@ jobs:
 
 ### go-version-workflow
 
-This workflow updates to the latest go version in repositories that utilize Golang as the primary development language.
+This workflow updates to the latest go version in repositories that utilize Golang as the primary development language. The workflow is triggered by https://github.com/dell/common-github-actions/actions/workflows/trigger-go-workflow.yaml.
 
-The workflow does not accept any parameters and can be used from any repo by creating a workflow that resembles the following
+The worklow uses a GitHub App ID and private key. It requires that the repository, where this is used, has the App ID stored as a variable under the name RELEASE_ACTIONS_APP_ID.
+
+The workflow does not accept any parameters and can be used from any repository by creating a workflow that resembles the following
+Note: Workflows that call reusable workflows in the same organization or enterprise can use the inherit keyword to implicitly pass the secrets. See: https://docs.github.com/en/actions/sharing-automations/reusing-workflows#passing-inputs-and-secrets-to-a-reusable-workflow.
 
 ```yaml
 name: Workflow
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [go-update-workflow]
-
-# permissions required for this workflow
-permissions:
-  contents: write
-  pull-requests: write
 
 jobs:
   # go version update
