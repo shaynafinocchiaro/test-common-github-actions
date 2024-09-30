@@ -19,8 +19,16 @@ jobs:
       steps:
       - name: Check latest go version
         run: |
-          echo "GO_VERSION_STRIPPED=$(curl -sL https://go.dev/VERSION?m=text | awk 'NR==1{print $1}' | tr -cd '[:digit:].')" >> $GITHUB_ENV
-          echo "GO_VERSION=$(curl -sL https://go.dev/VERSION?m=text | awk 'NR==1{print $1}')" >> $GITHUB_ENV
+          GO_VERSION_STRIPPED=$(curl -sL https://go.dev/VERSION?m=text | awk 'NR==1{print $1}' | tr -cd '[:digit:].')
+          GO_VERSION=$(curl -sL https://go.dev/VERSION?m=text | awk 'NR==1{print $1}')
+
+          if [[ -z "$GO_VERSION_STRIPPED" || -z "$GO_VERSION" ]]; then
+            echo "Error: GO_VERSION_STRIPPED or GO_VERSION is empty"
+            exit 1
+          fi
+
+          echo "GO_VERSION_STRIPPED=$GO_VERSION_STRIPPED" >> $GITHUB_ENV
+          echo "GO_VERSION=$GO_VERSION" >> $GITHUB_ENV
 
       - uses: actions/setup-go@v5
         with:
@@ -57,12 +65,12 @@ jobs:
           find . -type f ! -name "${{ env.exclude_file }}" -exec ${{ env.grep_cmd3 }} {} \; | while read -r file; do sed -i "s/golang:.*/golang:${{ env.GO_VERSION_STRIPPED }}/" "$file"; done
 
       # Needed for signing commits using Github App tokens
-      - uses: actions/create-github-app-token@v1.11.0
-        id: generate-token
-        with:
-          # required variable to be added to repository settings where the workflow runs
-          app-id: ${{ vars.RELEASE_ACTIONS_APP_ID }}
-          private-key: ${{ secrets.RELEASE_ACTIONS_APP_PRIVATE_KEY }}
+      # - uses: actions/create-github-app-token@v1.11.0
+      #   id: generate-token
+      #   with:
+      #     # required variable to be added to repository settings where the workflow runs
+      #     app-id: ${{ vars.RELEASE_ACTIONS_APP_ID }}
+      #     private-key: ${{ secrets.RELEASE_ACTIONS_APP_PRIVATE_KEY }}
 
       # Must enable "allow GitHub Actions to create pull requests" setting
       # Author defaults to the user who triggered the workflow run

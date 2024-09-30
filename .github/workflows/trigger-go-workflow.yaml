@@ -72,16 +72,10 @@ jobs:
           ]
 
     steps:
-      - uses: actions/create-github-app-token@v1.11.0
-        id: generate-token
-        with:
-          app-id: ${{ vars.RELEASE_ACTIONS_APP_ID }}
-          private-key: ${{ secrets.RELEASE_ACTIONS_APP_PRIVATE_KEY }}
-
       - name: Trigger Go Version Update
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ steps.generate-token.outputs.token }}
+          token: ${{ secrets.SF_GO_PAT }}
           repository: ${{ matrix.repo }}
           event-type: go-update-workflow
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
