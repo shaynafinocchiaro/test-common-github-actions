@@ -65,12 +65,12 @@ jobs:
           find . -type f ! -name "${{ env.exclude_file }}" -exec ${{ env.grep_cmd3 }} {} \; | while read -r file; do sed -i "s/golang:.*/golang:${{ env.GO_VERSION_STRIPPED }}/" "$file"; done
 
       # Needed for signing commits using Github App tokens
-      # - uses: actions/create-github-app-token@v1.11.0
-      #   id: generate-token
-      #   with:
-      #     # required variable to be added to repository settings where the workflow runs
-      #     app-id: ${{ vars.RELEASE_ACTIONS_APP_ID }}
-      #     private-key: ${{ secrets.RELEASE_ACTIONS_APP_PRIVATE_KEY }}
+      - uses: actions/create-github-app-token@v1.11.0
+        id: generate-token
+        with:
+          # required variable to be added to repository settings where the workflow runs
+          app-id: ${{ vars.RELEASE_ACTIONS_APP_ID }}
+          private-key: ${{ secrets.RELEASE_ACTIONS_APP_PRIVATE_KEY }}
 
       # Must enable "allow GitHub Actions to create pull requests" setting
       # Author defaults to the user who triggered the workflow run

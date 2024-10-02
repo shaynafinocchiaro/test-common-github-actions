@@ -33,6 +33,7 @@ jobs:
           [
             shaynafinocchiaro/test-csm-operator,
             shaynafinocchiaro/test-common-github-actions,
+            shaynafinocchiaro/test-dell-csi-extensions,
             # "$WF_ORG/common-github-actions",
             # "$WF_ORG/csi-metadata-retriever",
             # "$WF_ORG/csi-volumegroup-snapshotter",
