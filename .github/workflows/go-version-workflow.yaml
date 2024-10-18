@@ -56,10 +56,10 @@ jobs:
           echo "Updating go version to ${{ env.major_version }}"
 
           echo "Update go.mod"
-          find . -type f -name "${{ env.gomod }}" -execdir sh -c '[ -f "{}" ] && go mod edit -go ${{ env.major_version }} && go mod tidy' \;
+          find . -type f -name "${{ env.gomod }}" -execdir sh -c 'go mod edit -go ${{ env.major_version }} && go mod tidy' \;
 
           echo "Update go.mod toolchain"
-          find . -type f -name "${{ env.gomod }}" -execdir sh -c '[ -f "{}" ] && grep -q "toolchain" go.mod && go mod edit -toolchain ${{ env.latest_version }} && go mod tidy' \;
+          find . -type f -name "${{ env.gomod }}" -execdir sh -c 'grep -q "toolchain" go.mod && go mod edit -toolchain ${{ env.latest_version }} && go mod tidy' \;
 
           if [ -f config/csm-common.mk ]; then sed -i "s/DEFAULT_GOVERSION.*/DEFAULT_GOVERSION=\"${{ env.major_version }}\"/g" config/csm-common.mk; fi
 
