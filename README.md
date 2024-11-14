@@ -55,7 +55,6 @@ In addition to the actions mentioned above, the repository contains workflows th
 This workflow runs static analysis checks against repositories that utilize Golang as the primary development language. The jobs that are run include:
 
 - golanci-lint with gofumpt (stricter version of gofmt), gosec, govet, and revive (replacement for golint). The configuration file for this job can be found at [.github/configs/golangci-lint/golangci.yaml](.github/configs/golangci-lint/golangci.yaml)
-- malware_security_scan, which is the malware-scanner mentioned above
 - yaml_lint_scan which validates yaml files. The yamllint config file for this job is at [.github/configs/yamllint/yamllint.yaml](.github/configs/yamllint/yamllint.yaml)
 
 The workflow does not accept any parameters and can be used from any repo by creating a workflow that resembles the following
@@ -76,28 +75,69 @@ jobs:
     name: Golang Validation
 ```
 
+### csm-release-libs
+
+This workflow automates the release process for all the Go Client Libraries:
+
+The workflow accepts version as an input and releases that particular version. Below is the example usage in gobrick repository. If no version is specified then it will automatically bump up the major version.
+
+```yaml
+name: Release Gobrick
+# Invocable as a reusable workflow
+# Can be manually triggered
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (major, minor, patch)'
+        required: true
+        default: 'none'
+jobs:
+  csm-release:
+    uses: dell/common-github-actions/.github/workflows/csm-release-libs.yaml@main
+    name: Release Go Client Libraries
+```
+
 ### go-version-workflow
 
-This workflow updates to the latest go version in repositories that utilize Golang as the primary development language. The workflow is triggered by https://github.com/dell/common-github-actions/actions/workflows/trigger-go-workflow.yaml.
-
-The worklow uses a GitHub App ID and private key. It requires that the repository, where this is used, has the App ID stored as a variable under the name RELEASE_ACTIONS_APP_ID.
+This workflow updates to the latest go version in repositories that utilize Golang as the primary development language. The workflow is triggered by https://github.com/dell/common-github-actions/actions/workflows/trigger-go-workflow.yaml or can be triggered manually.
 
 The workflow does not accept any parameters and can be used from any repository by creating a workflow that resembles the following
 Note: Workflows that call reusable workflows in the same organization or enterprise can use the inherit keyword to implicitly pass the secrets. See: https://docs.github.com/en/actions/sharing-automations/reusing-workflows#passing-inputs-and-secrets-to-a-reusable-workflow.
 
 ```yaml
-name: Workflow
+name: Go Version Update
+
 on:
   workflow_dispatch:
   repository_dispatch:
     types: [go-update-workflow]
 
 jobs:
-  # go version update
   go-version-update:
     uses: dell/common-github-actions/.github/workflows/go-version-workflow.yaml@main
     name: Go Version Update
     secrets: inherit
+```
+
+### go-common
+
+This workflow runs multiple checks against repositories that utilize Golang as the primary development language. Currently, this workflow will run unit tests, check package coverage, gosec, go formatter and vetter, and malware scan.
+
+```
+name: Common Workflows
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+
+  common:
+    name: Quality Checks
+    uses: dell/common-github-actions/.github/workflows/go-common.yml@main
 ```
 
 ## Support

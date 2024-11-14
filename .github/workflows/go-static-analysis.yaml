@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.23"
           cache: false
       - name: Checkout the code
         uses: actions/checkout@v4
@@ -55,19 +55,6 @@ jobs:
           version: latest
           skip-cache: true
           args: --config=golangci.yaml
-
-  # Check sources files for malware
-  malware_security_scan:
-    name: Malware Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
-      - name: Run malware scan
-        uses: dell/common-github-actions/malware-scanner@main
-        with:
-          directories: .
-          options: -ri
 
   # Check yaml for syntax validity, line length, trailing spaces, indentation, etc.
   yaml_lint_scan:

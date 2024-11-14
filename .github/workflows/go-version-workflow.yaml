@@ -18,6 +18,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
       - name: Check latest go version
+        # This script will get the major version of Go only, i.e. go1.23.
         run: |
           latest_version=$(curl -sL https://go.dev/VERSION?m=text | awk 'NR==1{print $1}')
           latest_version_stripped=$(curl -sL https://go.dev/VERSION?m=text | awk 'NR==1{print $1}' | tr -cd '[:digit:].')
@@ -30,6 +31,7 @@ jobs:
 
           echo "latest_version=$latest_version" >> $GITHUB_ENV
           echo "major_version=$major_version" >> $GITHUB_ENV
+          echo "The latest Go version is: $latest_version"
           echo "The latest major Go version is: $major_version"
 
       - uses: actions/setup-go@v5
@@ -55,29 +57,23 @@ jobs:
         run: |
           echo "Updating go version to ${{ env.major_version }}"
 
-          echo "Update go.mod"
           find . -type f -name "${{ env.gomod }}" -execdir sh -c '[ -f "{}" ] && go mod edit -go ${{ env.major_version }} && go mod tidy' \;
 
-          echo "Update go.mod toolchain"
           find . -type f -name "${{ env.gomod }}" -execdir sh -c '[ -f "{}" ] && grep -q "toolchain" go.mod && go mod edit -toolchain ${{ env.latest_version }} && go mod tidy' \;
 
-          if [ -f config/csm-common.mk ]; then sed -i "s/DEFAULT_GOVERSION.*/DEFAULT_GOVERSION=\"${{ env.major_version }}\"/g" config/csm-common.mk; fi
+          if [ -f config/csm-common.mk ]; then sed -i "s/^DEFAULT_GOVERSION.*/DEFAULT_GOVERSION=\"${{ env.major_version }}\"/g" config/csm-common.mk; fi
 
-          echo "Update go-version"
           find . -type f ! -name "${{ env.exclude_file }}" -exec ${{ env.grep_cmd2 }} {} \; | while read -r file; do grep -v "hugo-version" "$file" | sed -i "s/go-version:.*/go-version: \"${{ env.major_version }}\"/" "$file"; done
 
-          echo "Update golang"
           find . -type f ! -name "${{ env.exclude_file }}" -exec ${{ env.grep_cmd3 }} {} \; | while read -r file; do sed -i "s/golang:.*/golang:${{ env.major_version }}/" "$file"; done
 
-          git status
-
       # Needed for signing commits using Github App tokens
+      # See: https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#commit-signing
       - uses: actions/create-github-app-token@v1.11.0
         id: generate-token
         with:
-          # required variable to be added to repository settings where the workflow runs
-          app-id: ${{ vars.RELEASE_ACTIONS_APP_ID }}
-          private-key: ${{ secrets.RELEASE_ACTIONS_APP_PRIVATE_KEY }}
+          app-id: ${{ vars.CSM_RELEASE_APP_ID }}
+          private-key: ${{ secrets.CSM_RELEASE_APP_PRIVATE_KEY }}
 
       # Must enable "allow GitHub Actions to create pull requests" setting
       # Author defaults to the user who triggered the workflow run

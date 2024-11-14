@@ -10,17 +10,11 @@
 name: Trigger Go Version Workflow
 
 on:
+  schedule:
+    # Runs on the 12th hour on the first day of every month.
+    - cron: '0 12 1 * *'
   # Can be manually triggered
   workflow_dispatch:
-    inputs:
-      internal-repositories:
-        description: 'Internal repositories to trigger workflow against. Matrix example: "org/repo1, org/repo2"'
-        required: false
-
-# environment variables
-env:
-  WF_ORG: dell
-  INTERNAL_REPOS: ${{ github.event.inputs.internal-repositories }}
 
 jobs:
   trigger:
@@ -31,51 +25,49 @@ jobs:
       matrix:
         repo:
           [
-            shaynafinocchiaro/test-common-github-actions,
-            shaynafinocchiaro/test-dell-csi-extensions,
-            # "$WF_ORG/common-github-actions",
-            # "$WF_ORG/csi-metadata-retriever",
-            # "$WF_ORG/csi-volumegroup-snapshotter",
-            # "$WF_ORG/goscaleio",
-            # "$WF_ORG/gopowermax",
-            # "$WF_ORG/gounity",
-            # "$WF_ORG/gopowerscale",
-            # "$WF_ORG/gopowerstore",
-            # "$WF_ORG/gobrick",
-            # "$WF_ORG/gocsi",
-            # "$WF_ORG/goiscsi",
-            # "$WF_ORG/gonvme",
-            # "$WF_ORG/goobjectscale",
-            # "$WF_ORG/gofsutil",
-            # "$WF_ORG/dell-csi-extensions",
-            # "$WF_ORG/connectivity-cert-persister-k8s",
-            # "$WF_ORG/csi-powerflex",
-            # "$WF_ORG/csi-unity",
-            # "$WF_ORG/csi-powerscale",
-            # "$WF_ORG/csi-powerstore",
-            # "$WF_ORG/csi-powermax",
-            # "$WF_ORG/cosi",
-            # "$WF_ORG/csm-authorization",
-            # "$WF_ORG/csm-observability",
-            # "$WF_ORG/csm-metrics-powerscale",
-            # "$WF_ORG/csm-metrics-powermax",
-            # "$WF_ORG/csm-metrics-powerstore",
-            # "$WF_ORG/karavi-metrics-powerflex",
-            # "$WF_ORG/csm-metrics-unity",
-            # "$WF_ORG/csm-replication",
-            # "$WF_ORG/karavi-resiliency",
-            # "$WF_ORG/csm-operator",
-            # "$WF_ORG/cert-csi",
-            # "$WF_ORG/csm",
-            # "$WF_ORG/csm-docs",
-            # "$INTERNAL_REPOS",
+            "dell/cert-csi",
+            "dell/common-github-actions",
+            "dell/cosi",
+            "dell/csi-metadata-retriever",
+            "dell/csi-powerflex",
+            "dell/csi-powermax",
+            "dell/csi-powerscale",
+            "dell/csi-powerstore",
+            "dell/csi-unity",
+            "dell/csi-volumegroup-snapshotter",
+            "dell/csm",
+            "dell/csm-docs",
+            "dell/csm-logcollector",
+            "dell/csm-metrics-powermax",
+            "dell/csm-metrics-powerscale",
+            "dell/csm-metrics-powerstore",
+            "dell/csm-metrics-unity",
+            "dell/csm-operator",
+            "dell/csm-replication",
+            "dell/dell-csi-extensions",
+            "dell/gobrick",
+            "dell/gocsi",
+            "dell/gofsutil",
+            "dell/goiscsi",
+            "dell/gonvme",
+            "dell/goobjectscale",
+            "dell/gopowermax",
+            "dell/gopowerscale",
+            "dell/gopowerstore",
+            "dell/goscaleio",
+            "dell/gounity",
+            "dell/karavi-authorization",
+            "dell/karavi-metrics-powerflex",
+            "dell/karavi-resiliency",
+            "dell/karavi-topology",
           ]
 
     steps:
       - name: Trigger Go Version Update
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.SF_GO_PAT }}
+          # For token information, see: https://github.com/peter-evans/repository-dispatch/tree/main?tab=readme-ov-file#token
+          token: ${{ secrets.CSMBOT_PAT }}
           repository: ${{ matrix.repo }}
           event-type: go-update-workflow
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

@@ -28,6 +28,10 @@ inputs:
     description: 'Regex for skipping tests'
     required: false
     default: ""
+  run-test:
+    description: 'Regex to specify tests to run'
+    required: false
+    default: ""
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -37,6 +41,7 @@ runs:
     - ${{ inputs.skip-list }}
     - ${{ inputs.race-detector }}
     - ${{ inputs.skip-test }}
+    - ${{ inputs.run-test }}
 branding:
   icon: 'shield'
   color: 'blue'
