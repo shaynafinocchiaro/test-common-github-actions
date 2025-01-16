@@ -36,6 +36,7 @@ jobs:
     - name: Get latest commit SHAs
       id: get-latest-shas
       run: |
+        echo "latest-shas.txt" >> .gitignore
         REPOS=(
           "github.com/dell/goscaleio"
           "github.com/dell/gopowermax"
