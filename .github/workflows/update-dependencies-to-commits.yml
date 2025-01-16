@@ -56,14 +56,14 @@ jobs:
         SHAS=""
         for REPO in "${REPOS[@]}"; do
           LATEST_SHA=$(git ls-remote https://$REPO HEAD | awk '{print $1}')
-          SHAS+="$REPO@$LATEST_SHA\n"
+          SHAS+="$REPO@$LATEST_SHA "
         done
-        echo -e "SHAS=$SHAS" >> $GITHUB_ENV
+        echo "SHAS=$SHAS" >> $GITHUB_ENV
 
     - name: Update packages in go.mod
       run: |
         set +e
-        echo "${{ env.SHAS }}" | while IFS= read -r line; do
+        echo "${{ env.SHAS }}" | tr ' ' '\n' | while IFS= read -r line; do
           REPO=$(echo $line | cut -d'@' -f1)
           SHA=$(echo $line | cut -d'@' -f2)
 
