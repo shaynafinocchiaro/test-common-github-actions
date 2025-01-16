@@ -36,7 +36,6 @@ jobs:
     - name: Get latest commit SHAs
       id: get-latest-shas
       run: |
-        echo "latest-shas.txt" >> .gitignore
         REPOS=(
           "github.com/dell/goscaleio"
           "github.com/dell/gopowermax"
@@ -53,16 +52,18 @@ jobs:
           "github.com/dell/csi-metadata-retriever"
           "github.com/dell/csi-volumegroup-snapshotter"
         )
+
+        SHAS=""
         for REPO in "${REPOS[@]}"; do
           LATEST_SHA=$(git ls-remote https://$REPO HEAD | awk '{print $1}')
-          echo "$REPO@$LATEST_SHA" >> latest-shas.txt
+          SHAS+="$REPO@$LATEST_SHA\n"
         done
-        cat latest-shas.txt
+        echo -e "SHAS=$SHAS" >> $GITHUB_ENV
 
     - name: Update packages in go.mod
       run: |
         set +e
-        while IFS= read -r line; do
+        echo "${{ env.SHAS }}" | while IFS= read -r line; do
           REPO=$(echo $line | cut -d'@' -f1)
           SHA=$(echo $line | cut -d'@' -f2)
 
