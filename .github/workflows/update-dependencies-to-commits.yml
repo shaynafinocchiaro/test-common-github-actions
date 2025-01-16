@@ -98,7 +98,7 @@ jobs:
             echo "Updating $REPO@$SHA"
             go get ${REPO}@${SHA} || echo "Failed to update ${REPO}@$SHA"
           fi
-        done < latest-shas.txt
+        done
         go mod tidy
 
     # Needed for signing commits using Github App tokens
