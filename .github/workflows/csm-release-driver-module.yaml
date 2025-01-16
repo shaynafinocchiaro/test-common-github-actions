@@ -12,13 +12,14 @@ name: Release CSM Drivers and Modules
 # Invocable as a reusable workflow
 on:
   workflow_call:
-  workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (major, minor, patch), ex: 1.0.0'
+        description: "Version to release (major, minor, patch). Example: 1.x.x"
+        type: string
         required: true
       image:
-        description: 'Image name, ex: csm-powerstore'
+        description: "Image name. Example: csi-powerstore"
+        type: string
         required: true
 
 jobs:
@@ -37,78 +38,75 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
 
-      # TODO: build binaries
+      # TODO: build binaries if any like dellctl, repctl etc.
       - name: Build
         run: go build -v ./...
 
-      - name: Run malware scan
-        uses: dell/common-github-actions/malware-scanner@main
-        with:
-          directories: .
-          options: -ri
-
-      - name: Run gosec
-        uses: dell/common-github-actions/gosec-runner@main
-        with:
-          directories: "./..."
-
-      # TODO: run gofmt, go vet, and linting
-
   push-images:
-    name: Pull, Tag and Push Images
+    name: Release images to Dockerhub and Quay
     needs: build-and-scan
     runs-on: ubuntu-latest
     steps:
-      - name: Log in to Quay.io
-        run: echo "${{ secrets.QUAY_PASSWORD }}" | docker login quay.io -u "${{ secrets.QUAY_USERNAME }}" --password-stdin
-
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login docker.io -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Pull nightly image from Quay.io
-        run: docker pull quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:nightly
-
-      - name: Retag image for Quay.io
+      - name: Push Docker Image
         run: |
-          docker tag quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:nightly quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:v${{ github.event.inputs.version }}
+          docker pull dellemc/${{ inputs.image }}:nightly
+          docker tag dellemc/${{ inputs.image }}:nightly dellemc/${{ inputs.image }}:v${{ inputs.version }}
+          docker push dellemc/${{ inputs.image }}:v${{ inputs.version }}
+          docker tag dellemc/${{ inputs.image }}:v${{ inputs.version }} dellemc/${{ inputs.image }}:latest
+          docker push dellemc/${{ inputs.image }}:latest
 
-          docker tag quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:nightly quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:latest
-
-      - name: Retag image for Docker Hub
+      - name: Get Quay Manifest
+        id: get_quay_manifest
         run: |
-          docker tag quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:nightly dellemc/${{ github.event.inputs.image }}:v${{ github.event.inputs.version }}
+          SHA=$(curl -s --location --request GET 'https://quay.io/api/v1/repository/dell/container-storage-modules/${{ inputs.image }}/tag?specificTag=nightly' --header 'Content-Type: application/json' --header 'Authorization: Bearer ${{ secrets.QUAY_API_TOKEN }}' | jq -r '.tags[0].manifest_digest')
+          echo "::set-output name=sha::$SHA"
 
-          docker tag quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:nightly dellemc/${{ github.event.inputs.image }}:latest
-
-      - name: Push ${{ github.event.inputs.version }} and latest tag to Quay.io
+      - name: Push Quay Manifest
         run: |
-          docker push quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:v${{ github.event.inputs.version }}
-          docker push quay.io/dell/container-storage-modules/${{ github.event.inputs.image }}:latest
-
-      - name: Push ${{ github.event.inputs.version }} and latest tag to Docker Hub
-        run: |
-          docker push dellemc/${{ github.event.inputs.image }}:v${{ github.event.inputs.version }}
-          docker push dellemc/${{ github.event.inputs.image }}:latest
-
+          curl -s --location --request PUT 'https://quay.io/api/v1/repository/dell/container-storage-modules/${{ inputs.image }}/tag/v${{ inputs.version }}' \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer ${{ secrets.QUAY_API_TOKEN }}' \
+          --data-raw '{
+            "manifest_digest": "${{ steps.get_quay_manifest.outputs.sha }}"
+          }'
+          curl -s --location --request PUT 'https://quay.io/api/v1/repository/dell/container-storage-modules/${{ inputs.image }}/tag/latest' \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer ${{ secrets.QUAY_API_TOKEN }}' \
+          --data-raw '{
+            "manifest_digest": "${{ steps.get_quay_manifest.outputs.sha }}"
+          }'
   create-release:
-    name: Create Release
+    name: Create release and branch
     needs: push-images
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+            gpg_private_key: ${{ secrets.CSM_GPG_PRIVATE_KEY }}
+            git_user_signingkey: true
+            git_commit_gpgsign: true
+            git_tag_gpgsign: true
+            git_config_global: true
+
       - name: Create new tag
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git tag v${{ github.event.inputs.version }}
-          git push origin v${{ github.event.inputs.version }}
-
-      # TODO: attach built binaries to the release
+            git tag -s -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
+            git push origin v${{ inputs.version }}
+      
+      # TODO: attach built binaries to the release (if any like repctl, dellctl etc.)
       - name: Create Release
         id: release_notes
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.event.inputs.version }}
-          name: Release v${{ github.event.inputs.version }}
+          tag_name: v${{ inputs.version }}
+          name: Release v${{ inputs.version }}
           draft: true
           prerelease: false
           generate_release_notes: true
@@ -116,15 +114,10 @@ jobs:
           body: |
             ## Documentation
             [General Documentation](https://dell.github.io/csm-docs/docs/)
-
-            ### Change Log
-            See the [CHANGELOG](https://github.com/dell/csm/blob/release-v1.12.0/CHANGELOG/CHANGELOG-1.12.0.md) for more details.
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release branch
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git checkout -b release/v${{ github.event.inputs.version }}
-          git push origin release/v${{ github.event.inputs.version }}
+          git checkout -b release/v${{ inputs.version }}
+          git push origin release/v${{ inputs.version }}

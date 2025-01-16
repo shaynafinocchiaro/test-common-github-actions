@@ -6,65 +6,46 @@
 #
 #  http://www.apache.org/licenses/LICENSE-2.0
 
-# Trigger workflow for go version update on CSM projects
-name: Trigger Go Version Workflow
+# Trigger workflow for auto release of CSM projects
+name: Trigger Release of CSM Drivers and Modules
 
 on:
-  schedule:
-    # Runs on the 12th hour on the first day of every month.
-    - cron: '0 12 1 * *'
-  # Can be manually triggered
   workflow_dispatch:
 
 jobs:
   trigger:
-    name: Trigger Go Version Update
+    name: Trigger Release of CSM Drivers and Modules
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         repo:
           [
-            "dell/cert-csi",
-            "dell/common-github-actions",
-            "dell/cosi",
             "dell/csi-metadata-retriever",
             "dell/csi-powerflex",
             "dell/csi-powermax",
             "dell/csi-powerscale",
             "dell/csi-powerstore",
             "dell/csi-unity",
-            "dell/csm",
-            "dell/csm-docs",
-            "dell/csm-logcollector",
             "dell/csm-metrics-powermax",
             "dell/csm-metrics-powerscale",
             "dell/csm-metrics-powerstore",
             "dell/csm-metrics-unity",
             "dell/csm-operator",
             "dell/csm-replication",
-            "dell/dell-csi-extensions",
-            "dell/gobrick",
-            "dell/gocsi",
-            "dell/gofsutil",
-            "dell/goiscsi",
-            "dell/gonvme",
-            "dell/gopowermax",
-            "dell/gopowerscale",
-            "dell/gopowerstore",
-            "dell/goscaleio",
-            "dell/gounity",
-            "dell/karavi-metrics-powerflex",
+            "dell/karavi-authorization",
             "dell/karavi-resiliency",
+            "dell/karavi-observability",
+            "dell/karavi-metrics-powerflex",
             "dell/karavi-topology",
           ]
 
     steps:
-      - name: Trigger Go Version Update
+      - name: Trigger Release of CSM Drivers and Modules
         uses: peter-evans/repository-dispatch@v3
         with:
           # For token information, see: https://github.com/peter-evans/repository-dispatch/tree/main?tab=readme-ov-file#token
           token: ${{ secrets.CSMBOT_PAT }}
           repository: ${{ matrix.repo }}
-          event-type: go-update-workflow
+          event-type: auto-release-workflow
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
