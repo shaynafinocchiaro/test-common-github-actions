@@ -72,6 +72,11 @@ jobs:
         done < dell-libraries-list.txt
         go mod tidy
 
+    # Delete file so it doesn't get included in the PR
+    - name: Delete dell-libraries-list.txt
+      run: |
+        rm dell-libraries-list.txt
+
     # Needed for signing commits using Github App tokens
     # See: https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#commit-signing
     - uses: actions/create-github-app-token@v1.11.1
