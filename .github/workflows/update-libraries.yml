@@ -56,7 +56,7 @@ jobs:
           fi
           echo "HERE"
 
-          MODULE_PATH=$(go list -m -f '{{.Path}}' $REPO 2>&1)
+          MODULE_PATH=$(go list -m -f '{{.Path}}' $REPO 2>/dev/null)
           GO_LIST_EXIT_CODE=$?
           # Add a short delay
           sleep 1
