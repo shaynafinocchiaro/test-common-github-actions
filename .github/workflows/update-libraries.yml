@@ -54,8 +54,12 @@ jobs:
             done
             continue
           fi
+          echo "HERE"
 
           MODULE_PATH=$(go list -m -f '{{.Path}}' $REPO 2>/dev/null)
+          # Add a short delay
+          sleep 1
+          echo "HERE 2"
           if [[ $? -ne 0 ]]; then
             echo "Skipping $REPO: not a known dependency"
             continue
