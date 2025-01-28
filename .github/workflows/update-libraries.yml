@@ -61,6 +61,8 @@ jobs:
             continue
           fi
 
+          echo "MODULE_PATH: $MODULE_PATH"
+
           if [[ $MODULE_PATH == *"/v2"* ]]; then
             echo "Updating ${REPO}/v2"
             go get ${REPO}/v2@latest || echo "Failed to update ${REPO}/v2"
