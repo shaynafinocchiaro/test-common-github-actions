@@ -37,6 +37,7 @@ jobs:
         curl -O -f $LIST
 
     - name: Update packages to latest versions in go.mod
+      continue-on-error: true
       run: |
         while IFS= read -r REPO
         do
@@ -57,13 +58,8 @@ jobs:
           echo "HERE"
 
           MODULE_PATH=$(go list -m -f '{{.Path}}' $REPO 2>/dev/null)
-          GO_LIST_EXIT_CODE=$?
-          # Add a short delay
-          sleep 1
-          echo "HERE 2"
-          if [[ $GO_LIST_EXIT_CODE -ne 0 ]]; then
+          if [[ $? -ne 0 ]]; then
             echo "Skipping $REPO: not a known dependency"
-            echo "Error: $MODULE_PATH"
             continue
           fi
 
