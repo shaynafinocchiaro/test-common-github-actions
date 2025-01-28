@@ -57,11 +57,13 @@ jobs:
           echo "HERE"
 
           MODULE_PATH=$(go list -m -f '{{.Path}}' $REPO 2>&1)
+          GO_LIST_EXIT_CODE=$?
           # Add a short delay
           sleep 1
           echo "HERE 2"
-          if [[ $? -ne 0 ]]; then
+          if [[ $GO_LIST_EXIT_CODE -ne 0 ]]; then
             echo "Skipping $REPO: not a known dependency"
+            echo "Error: $MODULE_PATH"
             continue
           fi
 
