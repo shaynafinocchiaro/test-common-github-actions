@@ -84,3 +84,10 @@ jobs:
         with:
           directories: .
           options: -ri
+
+  dependabot_automerge:
+    name: Automerge Dependabot PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable automerge
+        uses: shaynafinocchiaro/test-common-github-actions/.github/workflows/dependabot-automerge.yml@main
