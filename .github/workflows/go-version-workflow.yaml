@@ -51,7 +51,7 @@ jobs:
       - name: Update go version
         env:
           gomod: go.mod
-          grep_cmd2: grep -l "go-version"
+          grep_cmd2: grep -I -l "go-version"
           grep_cmd3: grep -l "FROM golang"
           exclude_file: go-version-workflow.yaml
         run: |
